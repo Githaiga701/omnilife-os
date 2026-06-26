@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String          @id @default(cuid())
+  email        String          @unique
+  name         String?
+  createdAt    DateTime        @default(now())
+  projects     Project[]
+  transactions Transaction[]
+  accounts     Account[]
+  events       CalendarEvent[]
+  skills       Skill[]
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  title       String
+  description String?
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+
+  tasks Task[]
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id])
+  title       String
+  isCompleted Boolean   @default(false)
+  dueDate     DateTime?
+}
+
+model Account {
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  name         String
+  type         String
+  balance      Float         @default(0.0)
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  accountId   String
+  account     Account  @relation(fields: [accountId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  amount      Float
+  description String
+  category    String?
+  isPending   Boolean  @default(false)
+  date        DateTime @default(now())
+}
+
+model CalendarEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  location    String?
+  type        String   @default("CALENDAR")
+}
+
+model Skill {
+  id          String @id @default(cuid())
+  userId      String
+  user        User   @relation(fields: [userId], references: [id])
+  name        String
+  category    String
+  level       Int    @default(0)
+  targetLevel Int    @default(10)
+}
