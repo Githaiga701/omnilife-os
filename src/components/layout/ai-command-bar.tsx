@@ -34,6 +34,21 @@ const toolDisplayNames: Record<string, string> = {
   createCalendarEvent: "📅 Creating calendar event...",
 };
 
+type TextPart = { type: "text"; text: string };
+type ToolUIPart = { type: "tool-ui"; state?: string; toolName?: string };
+
+function isTextPart(part: unknown): part is TextPart {
+  if (typeof part !== "object" || part === null) return false;
+  const candidate = part as { type?: unknown; text?: unknown };
+  return candidate.type === "text" && typeof candidate.text === "string";
+}
+
+function isToolUIPart(part: unknown): part is ToolUIPart {
+  if (typeof part !== "object" || part === null) return false;
+  const candidate = part as { type?: unknown };
+  return candidate.type === "tool-ui";
+}
+
 export function AICommandBar() {
   const [open, setOpen] = useState(false);
   const [inputFocused, setInputFocused] = useState(false);
@@ -41,7 +56,7 @@ export function AICommandBar() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [input, setInput] = useState("");
 
-  const { messages, sendMessage, status, error, clearError } = useChat({
+  const { messages, sendMessage, status } = useChat({
     id: "omnilife-chat",
     transport: new DefaultChatTransport({ api: "/api/chat" }),
   });
@@ -91,8 +106,8 @@ export function AICommandBar() {
   return (
     <>
       {/* Floating input bar — always visible */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-md md:left-60">
-        <div className="mx-auto flex max-w-4xl items-center gap-2 px-4 py-3">
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-md md:left-72">
+        <div className="mx-auto flex max-w-4xl items-center gap-2 px-3 py-3 sm:px-4">
           <div
             onClick={() => setOpen(true)}
             className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gradient-to-br from-primary to-purple-600 shadow-lg shadow-primary/20"
@@ -108,7 +123,7 @@ export function AICommandBar() {
                 onChange={(e) => setInput(e.target.value)}
                 onFocus={() => setInputFocused(true)}
                 onBlur={() => setInputFocused(false)}
-                placeholder="Ask OmniLife AI... (e.g., 'Log 2 hours of React study')"
+                placeholder="Ask OmniLife AI..."
                 className="h-10 w-full bg-muted/50 pl-4 pr-10 text-sm ring-1 ring-border/50 focus-visible:ring-primary/30"
                 disabled={isLoading}
               />
@@ -136,12 +151,12 @@ export function AICommandBar() {
 
       {/* Full dialog for conversation history */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl border border-border/40 shadow-2xl shadow-black/30">
+        <DialogContent className="max-h-[88dvh] max-w-2xl flex flex-col p-0 gap-0 overflow-hidden rounded-2xl border border-border/40 shadow-2xl shadow-black/30">
           {/* Glow behind title */}
           <div className="absolute -top-20 left-1/2 -translate-x-1/2 h-40 w-72 bg-primary/20 rounded-full blur-[80px] pointer-events-none" />
 
-          <DialogHeader className="px-6 py-4 border-b border-border/40">
-            <DialogTitle className="flex items-center gap-2">
+          <DialogHeader className="px-4 py-4 border-b border-border/40 sm:px-6">
+            <DialogTitle className="flex flex-wrap items-center gap-2 pr-10 text-base sm:text-lg">
               <Sparkles className="h-5 w-5 text-purple-400" />
               OmniLife AI Assistant
               {isLoading && (
@@ -153,7 +168,7 @@ export function AICommandBar() {
             </DialogTitle>
           </DialogHeader>
 
-          <ScrollArea className="flex-1 px-6 py-4 min-h-[200px] max-h-[50vh]">
+          <ScrollArea className="flex-1 px-4 py-4 min-h-[200px] max-h-[55dvh] sm:px-6">
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full py-12 text-center">
                 <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary/20 to-purple-600/20 flex items-center justify-center mb-4">
@@ -171,11 +186,11 @@ export function AICommandBar() {
                 <div key={message.id} className="space-y-2">
                   {message.role === "user" && (
                     <div className="flex items-start gap-3 justify-end">
-                      <div className="bg-primary/10 rounded-2xl rounded-tr-sm px-4 py-3 max-w-[80%]">
+                      <div className="bg-primary/10 rounded-2xl rounded-tr-sm px-4 py-3 max-w-[85%] sm:max-w-[80%]">
                         <p className="text-sm">
                           {message.parts
-                            .filter((p) => p.type === "text")
-                            .map((p) => (p as any).text || "")
+                            .filter(isTextPart)
+                            .map((p) => p.text)
                             .join("")}
                         </p>
                       </div>
@@ -184,8 +199,8 @@ export function AICommandBar() {
                   )}
 
                   {message.parts.map((part, idx) => {
-                    if (part.type === "tool-ui") {
-                      const { state, toolName } = part as any;
+                    if (isToolUIPart(part)) {
+                      const { state, toolName = "tool" } = part;
                       const displayName = toolDisplayNames[toolName] || `🔧 Running ${toolName}...`;
 
                       return (
@@ -213,14 +228,13 @@ export function AICommandBar() {
                         </div>
                       );
                     }
-                    if (part.type === "text" && message.role === "assistant") {
-                      const textPart = part as any;
-                      if (!textPart.text) return null;
+                    if (isTextPart(part) && message.role === "assistant") {
+                      if (!part.text) return null;
                       return (
                         <div key={idx} className="flex items-start gap-3">
                           <Bot className="h-5 w-5 text-purple-400 mt-1 flex-shrink-0" />
-                          <div className="bg-muted/50 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[80%]">
-                            <p className="text-sm whitespace-pre-wrap">{textPart.text}</p>
+                          <div className="bg-muted/50 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%] sm:max-w-[80%]">
+                            <p className="text-sm whitespace-pre-wrap">{part.text}</p>
                           </div>
                         </div>
                       );

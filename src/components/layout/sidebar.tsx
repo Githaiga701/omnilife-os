@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   CalendarDays,
-  Command,
   FolderKanban,
   GraduationCap,
   LayoutDashboard,
@@ -107,8 +106,8 @@ export function Sidebar() {
         </div>
       </aside>
 
-      <nav className="sticky top-0 z-40 grid h-16 w-full grid-cols-5 border-b border-border/70 bg-card/95 p-2 shadow-lg shadow-black/20 backdrop-blur md:hidden">
-        {sidebarItems.slice(0, 5).map((item) => {
+      <nav className="sticky top-0 z-40 flex h-16 w-full shrink-0 items-center gap-1 overflow-x-auto border-b border-border/70 bg-card/95 px-2 py-2 shadow-lg shadow-black/20 backdrop-blur md:hidden">
+        {[...sidebarItems, { name: "Settings", href: "/settings", icon: Settings }].map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
 
@@ -118,14 +117,25 @@ export function Sidebar() {
               href={item.href}
               aria-label={item.name}
               className={cn(
-                "flex h-12 items-center justify-center rounded-lg transition-colors",
+                "flex h-12 min-w-16 flex-col items-center justify-center gap-1 rounded-md px-2 text-[10px] font-medium transition-colors",
                 isActive ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
               <Icon className="h-4 w-4" />
+              <span className="max-w-14 truncate">{item.name}</span>
             </Link>
           );
         })}
+
+        <div className="flex h-12 min-w-12 items-center justify-center">
+          <ThemeToggle />
+        </div>
+
+        <form action={logout} className="min-w-12">
+          <Button type="submit" size="icon-sm" variant="ghost" aria-label="Logout" className="h-12 w-12 text-muted-foreground hover:text-red-500">
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </form>
       </nav>
     </>
   );

@@ -1,15 +1,13 @@
 import { db } from "@/lib/db";
 import { getMockUser } from "@/lib/mock-auth";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { createHobby, updateHobbyProgress, deleteHobby } from "@/app/actions/calendar";
-import { Brush, Camera, Music2, Trophy, Trash2 } from "lucide-react";
+import { Brush, Camera, Music2, Trophy, Trash2, type LucideIcon } from "lucide-react";
 import type { Hobby } from "@prisma/client";
 
-const hobbyIcons: Record<string, any> = {
+const hobbyIcons: Record<string, LucideIcon> = {
   Brush, Camera, Music2, Trophy,
 };
 
@@ -48,7 +46,7 @@ export default async function HobbiesPage() {
               <div className="mt-5 h-2 rounded-full bg-muted">
                 <div className="h-2 rounded-full bg-primary" style={{ width: `${hobby.progress}%` }} />
               </div>
-              <form action={updateHobbyProgress} className="mt-3 flex gap-2">
+              <form action={updateHobbyProgress} className="mt-3 flex flex-wrap gap-2">
                 <input type="hidden" name="id" value={hobby.id} />
                 <Input
                   name="progress"

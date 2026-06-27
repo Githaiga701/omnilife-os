@@ -1,16 +1,14 @@
 import { db } from "@/lib/db";
 import { getMockUser } from "@/lib/mock-auth";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
 import { createCalendarEvent, deleteCalendarEvent } from "@/app/actions/calendar";
-import { MapPinned, Plane, Ticket, Users, CalendarClock, Trash2 } from "lucide-react";
+import { MapPinned, Plane, Ticket, Users, CalendarClock, Trash2, type LucideIcon } from "lucide-react";
 import type { CalendarEvent } from "@prisma/client";
 
-const eventTypeIcons: Record<string, any> = {
+const eventTypeIcons: Record<string, LucideIcon> = {
   Travel: Plane,
   Learning: Ticket,
   Milestone: Users,
@@ -23,12 +21,14 @@ export default async function EventsPage() {
     orderBy: { startTime: "asc" },
   })) as CalendarEvent[];
 
-  const planCount = events.filter(e => e.startTime > new Date(Date.now() + 7 * 86400000)).length;
+  const now = new Date();
+  const oneWeekFromNow = new Date(now.getTime() + 7 * 86400000);
+  const planCount = events.filter(e => e.startTime > oneWeekFromNow).length;
   const bookCount = events.filter(e => {
-    const diff = e.startTime.getTime() - Date.now();
+    const diff = e.startTime.getTime() - now.getTime();
     return diff > 0 && diff <= 7 * 86400000;
   }).length;
-  const confirmCount = events.filter(e => e.startTime <= new Date()).length;
+  const confirmCount = events.filter(e => e.startTime <= now).length;
 
   return (
     <PageShell
@@ -44,7 +44,7 @@ export default async function EventsPage() {
             </div>
             <MapPinned className="h-5 w-5 text-muted-foreground" />
           </div>
-          <div className="mt-6 grid grid-cols-3 gap-2">
+          <div className="mt-6 grid gap-2 sm:grid-cols-3">
             {[
               { label: "Plan", count: planCount, desc: "> 1 week out" },
               { label: "Book", count: bookCount, desc: "within a week" },
@@ -62,7 +62,7 @@ export default async function EventsPage() {
             <h3 className="text-sm font-semibold mb-3">Add new event</h3>
             <form action={createCalendarEvent} className="space-y-3">
               <Input name="title" placeholder="Event title" required />
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid gap-2 sm:grid-cols-2">
                 <DatePicker name="startTime" includeTime required />
                 <DatePicker name="endTime" includeTime required />
               </div>
@@ -83,8 +83,8 @@ export default async function EventsPage() {
               const Icon = eventTypeIcons[typeLabel] || CalendarClock;
 
               return (
-                <div key={event.id} className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
-                  <div className="flex min-w-0 items-center gap-3">
+                <div key={event.id} className="flex items-start justify-between gap-3 py-4 first:pt-0 last:pb-0">
+                  <div className="flex min-w-0 items-start gap-3">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/12 text-primary">
                       <Icon className="h-5 w-5" />
                     </span>

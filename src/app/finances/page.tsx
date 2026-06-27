@@ -86,7 +86,7 @@ export default async function FinancesPage() {
           </Card>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[1fr_1.4fr]">
+        <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr] lg:gap-8">
           <div className="space-y-6">
             <h2 className="text-xl font-semibold flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-red-400" /> Bills & Obligations
@@ -95,17 +95,17 @@ export default async function FinancesPage() {
             <Card>
               <CardHeader><CardTitle className="text-base">Add New Bill</CardTitle></CardHeader>
               <CardContent>
-                <form action={createBill} className="grid grid-cols-2 gap-3">
-                  <div className="col-span-2">
+                <form action={createBill} className="grid gap-3 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
                     <Input name="name" placeholder="Bill Name (e.g., Apartment Rent)" required />
                   </div>
                   <Input name="amount" type="number" step="0.01" placeholder="Amount ($)" required />
                   <DatePicker name="dueDate" required />
-                  <div className="col-span-2 flex items-center gap-2">
+                  <div className="flex items-center gap-2 sm:col-span-2">
                     <input type="checkbox" name="isRecurring" id="isRecurring" className="h-4 w-4" />
                     <Label htmlFor="isRecurring">Recurring Bill</Label>
                   </div>
-                  <div className="col-span-2">
+                  <div className="sm:col-span-2">
                     <select name="frequency" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                       <option value="ONE_TIME">One Time</option>
                       <option value="WEEKLY">Weekly</option>
@@ -113,7 +113,7 @@ export default async function FinancesPage() {
                       <option value="YEARLY">Yearly</option>
                     </select>
                   </div>
-                  <Button type="submit" className="col-span-2">Add Bill</Button>
+                  <Button type="submit" className="sm:col-span-2">Add Bill</Button>
                 </form>
               </CardContent>
             </Card>
@@ -122,9 +122,9 @@ export default async function FinancesPage() {
               {bills.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No bills added yet.</p>}
               {bills.map((bill) => (
                 <Card key={bill.id} className={bill.status === "PAID" ? "opacity-60" : ""}>
-                  <CardContent className="p-4 flex justify-between items-center">
-                    <div>
-                      <div className="flex items-center gap-2">
+                  <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-semibold">{bill.title}</h3>
                         <Badge variant="outline" className={getStatusColor(bill.status)}>{bill.status}</Badge>
                       </div>
@@ -133,10 +133,10 @@ export default async function FinancesPage() {
                         {bill.isRecurring && ` • Repeats ${bill.frequency.toLowerCase().replace("_", " ")}`}
                       </p>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-col gap-3 sm:items-end">
                       <span className="text-lg font-bold">${bill.amount.toFixed(2)}</span>
                       {bill.status !== "PAID" && (
-                        <form action={markBillAsPaid} className="flex items-center gap-2">
+                        <form action={markBillAsPaid} className="flex flex-wrap items-center gap-2">
                           <input type="hidden" name="billId" value={bill.id} />
                           <label className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer">
                             <input type="checkbox" name="createTransaction" defaultChecked className="h-3 w-3" />
@@ -162,13 +162,13 @@ export default async function FinancesPage() {
             <Card>
               <CardHeader><CardTitle className="text-base">Log Expected Income</CardTitle></CardHeader>
               <CardContent>
-                <form action={createIncomeEntry} className="grid grid-cols-2 gap-3">
-                  <div className="col-span-2">
+                <form action={createIncomeEntry} className="grid gap-3 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
                     <Input name="sourceName" placeholder="Source (e.g., Client A, Part-time Job)" required />
                   </div>
                   <Input name="totalAmount" type="number" step="0.01" placeholder="Total Expected ($)" required />
                   <DatePicker name="dueDate" required />
-                  <Button type="submit" className="col-span-2">Add Income</Button>
+                  <Button type="submit" className="sm:col-span-2">Add Income</Button>
                 </form>
               </CardContent>
             </Card>
@@ -182,9 +182,9 @@ export default async function FinancesPage() {
                 return (
                   <Card key={income.id} className={income.status === "PAID" ? "opacity-60" : ""}>
                     <CardContent className="p-4 space-y-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="flex items-center gap-2">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
                             <h3 className="font-semibold">{income.sourceName}</h3>
                             <Badge variant="outline" className={getStatusColor(income.status)}>{income.status}</Badge>
                           </div>
@@ -194,7 +194,7 @@ export default async function FinancesPage() {
                             </p>
                           )}
                         </div>
-                        <div className="text-right">
+                        <div className="sm:text-right">
                           <p className="text-lg font-bold text-green-400">${income.amountPaid.toFixed(2)} <span className="text-sm text-muted-foreground font-normal">/ ${income.totalAmount.toFixed(2)}</span></p>
                           {income.status !== "PAID" && <p className="text-xs text-muted-foreground">${remaining.toFixed(2)} remaining</p>}
                         </div>
@@ -203,7 +203,7 @@ export default async function FinancesPage() {
                       <Progress value={progressPercent} className="h-2" />
 
                       {income.status !== "PAID" && (
-                        <form action={logIncomePayment} className="flex gap-2 pt-2 border-t">
+                        <form action={logIncomePayment} className="flex flex-col gap-2 border-t pt-2 sm:flex-row">
                           <input type="hidden" name="incomeId" value={income.id} />
                           <Input 
                             name="newPayment" 

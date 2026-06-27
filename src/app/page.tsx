@@ -2,7 +2,6 @@ import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/mock-auth";
 import Link from "next/link";
 import {
-  ArrowUpRight,
   CalendarDays,
   CheckCircle2,
   CreditCard,
@@ -18,10 +17,6 @@ import {
   DollarSign,
   GraduationCap,
   ListChecks,
-  Zap,
-  ArrowRight,
-  BarChart3,
-  type LucideIcon,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PremiumCard } from "@/components/ui/premium-card";
@@ -45,11 +40,6 @@ type AssignmentWithCourse = Assignment & {
 };
 
 type LearningPathWithUnits = LearningPath & { units: Unit[] };
-
-async function safeModelQuery<T>(query: Promise<T> | undefined): Promise<T | null> {
-  if (query === undefined) return null;
-  try { return await query; } catch { return null; }
-}
 
 export default async function Home() {
   const user = await getCurrentUser();
@@ -107,7 +97,10 @@ export default async function Home() {
     ...billsDueWithin3Days.map(b => ({ type: "due-soon" as const, module: "finance" as const, message: `"${b.title}" — $${b.amount.toFixed(2)} due ${new Date(b.dueDate).toLocaleDateString()}`, severity: "warning" as const })),
     ...billsDueWithin7Days.map(b => ({ type: "upcoming" as const, module: "finance" as const, message: `"${b.title}" — $${b.amount.toFixed(2)} due ${new Date(b.dueDate).toLocaleDateString()}`, severity: "info" as const })),
     ...assignmentsDueWithin3Days.map(a => ({ type: "due-soon" as const, module: "learning" as const, message: `"${a.title}" due ${a.dueDate ? new Date(a.dueDate).toLocaleDateString() : ""}`, severity: "warning" as const })),
-  ].sort((a, b) => a.severity === "critical" ? -1 : a.severity === "warning" ? -1 : 1);
+  ].sort((a, b) => {
+    const rank = { critical: 0, warning: 1, info: 2 };
+    return rank[a.severity] - rank[b.severity];
+  });
   const totalPathProgress = learningPaths.length > 0
     ? Math.round(learningPaths.reduce((sum: number, p: { units: { completed: boolean }[] }) => {
         const completed = p.units.filter((u: { completed: boolean }) => u.completed).length;
@@ -125,8 +118,6 @@ export default async function Home() {
   })();
 
   const topPriority = notifications.find(n => n.severity === "critical")?.message || null;
-  const nextUpcoming = bills.filter(b => b.status === "UNPAID" && b.dueDate >= now).sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime())[0];
-  const upcomingAssignments = assignments.filter(a => a.dueDate && a.dueDate >= now).sort((a, b) => a.dueDate!.getTime() - b.dueDate!.getTime());
 
   return (
     <PageShell
@@ -168,7 +159,7 @@ export default async function Home() {
               <span className="truncate">{notifications.length} item{notifications.length > 1 ? "s" : ""} need{notifications.length === 1 ? "s" : ""} attention</span>
             </div>
           )}
-          <div className="mt-4 flex gap-3">
+          <div className="mt-4 flex flex-wrap gap-3">
             <Link href="/learning" className={cn(buttonVariants({ variant: "glow", size: "sm" }), "gap-2")}>
               <BookOpen className="h-3.5 w-3.5" />
               Learning
@@ -409,48 +400,48 @@ export default async function Home() {
       <section className="grid gap-3 grid-cols-2 sm:grid-cols-4">
         <Link
           href="/learning"
-          className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/60 p-4 shadow-sm backdrop-blur-xl hover:bg-gradient-to-br hover:from-primary/10 hover:to-purple-600/10 transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+          className="flex min-w-0 items-center gap-3 rounded-xl border border-border/40 bg-card/60 p-3 shadow-sm backdrop-blur-xl transition-all duration-200 hover:border-primary/30 hover:bg-gradient-to-br hover:from-primary/10 hover:to-purple-600/10 hover:shadow-lg hover:shadow-primary/10 sm:p-4"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500/20 to-cyan-500/20 ring-1 ring-blue-500/20">
             <BookOpen className="h-5 w-5 text-blue-400" />
           </div>
-          <div className="text-sm">
+          <div className="min-w-0 text-sm">
             <p className="font-medium">Learning</p>
             <p className="text-muted-foreground text-xs">{assignments.length} pending</p>
           </div>
         </Link>
         <Link
           href="/finances"
-          className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/60 p-4 shadow-sm backdrop-blur-xl hover:bg-gradient-to-br hover:from-green-500/10 hover:to-emerald-500/10 transition-all duration-200 hover:border-green-500/30 hover:shadow-lg hover:shadow-green-500/10"
+          className="flex min-w-0 items-center gap-3 rounded-xl border border-border/40 bg-card/60 p-3 shadow-sm backdrop-blur-xl transition-all duration-200 hover:border-green-500/30 hover:bg-gradient-to-br hover:from-green-500/10 hover:to-emerald-500/10 hover:shadow-lg hover:shadow-green-500/10 sm:p-4"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20 ring-1 ring-green-500/20">
             <DollarSign className="h-5 w-5 text-green-400" />
           </div>
-          <div className="text-sm">
+          <div className="min-w-0 text-sm">
             <p className="font-medium">Finances</p>
             <p className="text-muted-foreground text-xs">{unpaidBills.length} bills due</p>
           </div>
         </Link>
         <Link
           href="/projects"
-          className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/60 p-4 shadow-sm backdrop-blur-xl hover:bg-gradient-to-br hover:from-purple-500/10 hover:to-pink-500/10 transition-all duration-200 hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10"
+          className="flex min-w-0 items-center gap-3 rounded-xl border border-border/40 bg-card/60 p-3 shadow-sm backdrop-blur-xl transition-all duration-200 hover:border-purple-500/30 hover:bg-gradient-to-br hover:from-purple-500/10 hover:to-pink-500/10 hover:shadow-lg hover:shadow-purple-500/10 sm:p-4"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 ring-1 ring-purple-500/20">
             <ListChecks className="h-5 w-5 text-purple-400" />
           </div>
-          <div className="text-sm">
+          <div className="min-w-0 text-sm">
             <p className="font-medium">Projects</p>
             <p className="text-muted-foreground text-xs">{activeProjects} active</p>
           </div>
         </Link>
         <Link
           href="/calendar"
-          className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/60 p-4 shadow-sm backdrop-blur-xl hover:bg-gradient-to-br hover:from-yellow-500/10 hover:to-orange-500/10 transition-all duration-200 hover:border-yellow-500/30 hover:shadow-lg hover:shadow-yellow-500/10"
+          className="flex min-w-0 items-center gap-3 rounded-xl border border-border/40 bg-card/60 p-3 shadow-sm backdrop-blur-xl transition-all duration-200 hover:border-yellow-500/30 hover:bg-gradient-to-br hover:from-yellow-500/10 hover:to-orange-500/10 hover:shadow-lg hover:shadow-yellow-500/10 sm:p-4"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-yellow-500/20 to-orange-500/20 ring-1 ring-yellow-500/20">
             <CalendarDays className="h-5 w-5 text-yellow-400" />
           </div>
-          <div className="text-sm">
+          <div className="min-w-0 text-sm">
             <p className="font-medium">Calendar</p>
             <p className="text-muted-foreground text-xs">{eventsThisWeek} upcoming</p>
           </div>

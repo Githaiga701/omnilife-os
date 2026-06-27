@@ -95,16 +95,7 @@ function DatePickerInner({ name, required, includeTime = false, defaultValue, pl
     : ""
 
   React.useLayoutEffect(() => {
-    if (!open) {
-      setDropdownStyle({
-        position: "fixed",
-        visibility: "hidden",
-        top: 0,
-        left: 0,
-        width: 280,
-      })
-      return
-    }
+    if (!open) return
 
     function getPosition(): React.CSSProperties {
       const trigger = triggerRef.current
@@ -122,11 +113,13 @@ function DatePickerInner({ name, required, includeTime = false, defaultValue, pl
         top = Math.max(8, rect.top - panelHeight - 4)
       }
 
+      const panelWidth = Math.min(Math.max(rect.width, 280), window.innerWidth - 16)
+
       return {
         position: "fixed",
         top,
-        left: Math.min(rect.left, window.innerWidth - 300),
-        width: Math.max(rect.width, 280),
+        left: Math.max(8, Math.min(rect.left, window.innerWidth - panelWidth - 8)),
+        width: panelWidth,
         visibility: "visible",
       }
     }

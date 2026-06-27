@@ -13,7 +13,7 @@ export default function SignupPage() {
   const [state, formAction, pending] = useActionState(signup, undefined);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-background p-4">
+    <div className="flex min-h-dvh w-full items-center justify-center bg-gradient-to-br from-background via-muted/20 to-background">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">

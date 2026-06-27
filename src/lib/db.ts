@@ -9,6 +9,8 @@ type DbClient = PrismaClient & {
   user: PrismaClient["user"];
 };
 
+type FindUniqueByIdArgs = { where?: { id?: string } };
+
 const globalForPrisma = globalThis as unknown as {
   prisma: DbClient | undefined;
 };
@@ -55,19 +57,19 @@ function createFallbackDb(): DbClient {
     calendarEvent: {
       findMany: async () => [],
       create: async () => ({ id: "local-event", userId: "local-user", title: "", startTime: new Date(), endTime: new Date() }),
-      findUnique: async ({ where }: any) => where ? null : null,
+      findUnique: async ({ where }: FindUniqueByIdArgs) => where ? null : null,
       delete: async () => ({}),
     },
     skill: {
       findMany: async () => [],
       create: async () => ({ id: "local-skill", userId: "local-user", name: "", category: "", level: 0, targetLevel: 10 }),
-      findUnique: async ({ where }: any) => where ? null : null,
+      findUnique: async ({ where }: FindUniqueByIdArgs) => where ? null : null,
       update: async () => ({ id: "local-skill", userId: "local-user", name: "", category: "", level: 0, targetLevel: 10 }),
     },
     hobby: {
       findMany: async () => [],
       create: async () => ({ id: "local-hobby", userId: "local-user", name: "", cadence: "", progress: 0, createdAt: new Date() }),
-      findUnique: async ({ where }: any) => where ? null : null,
+      findUnique: async ({ where }: FindUniqueByIdArgs) => where ? null : null,
       update: async () => ({ id: "local-hobby", userId: "local-user", name: "", cadence: "", progress: 0, createdAt: new Date() }),
       delete: async () => ({}),
     },
@@ -80,7 +82,7 @@ function createFallbackDb(): DbClient {
       create: async () => ({ id: "local-bill", userId: "local-user", title: "", amount: 0, dueDate: new Date(), status: "UNPAID", isRecurring: false, frequency: "ONE_TIME" }),
       update: async () => ({ id: "local-bill", userId: "local-user", title: "", amount: 0, dueDate: new Date(), status: "PAID", isRecurring: false, frequency: "ONE_TIME" }),
       updateMany: async () => ({ count: 0 }),
-      findUnique: async ({ where }: any) => ({ id: where.id, userId: "local-user", title: "Mock Bill", amount: 100, dueDate: new Date(), status: "UNPAID", isRecurring: false, frequency: "ONE_TIME", transactionId: null, createdAt: new Date() }),
+      findUnique: async ({ where }: FindUniqueByIdArgs) => ({ id: where?.id ?? "local-bill", userId: "local-user", title: "Mock Bill", amount: 100, dueDate: new Date(), status: "UNPAID", isRecurring: false, frequency: "ONE_TIME", transactionId: null, createdAt: new Date() }),
     },
     incomeEntry: {
       findMany: async () => [],

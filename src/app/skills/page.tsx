@@ -1,7 +1,6 @@
 import { db } from "@/lib/db";
 import { getMockUser } from "@/lib/mock-auth";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +33,7 @@ export default async function SkillsPage() {
             <form action={createSkill} className="space-y-3">
               <Input name="name" placeholder="Skill name (e.g., Product Strategy)" required />
               <Input name="category" placeholder="Category (e.g., Business, Tech)" required />
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid gap-2 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="level" className="text-xs">Current level</Label>
                   <Input name="level" id="level" type="number" min="0" max="100" defaultValue="0" />
@@ -48,7 +47,7 @@ export default async function SkillsPage() {
             </form>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <div className="rounded-md border border-border/70 bg-background/55 p-4">
               <Brain className="h-4 w-4 text-primary" />
               <p className="mt-3 text-2xl font-semibold">{skills.length}</p>
@@ -88,7 +87,7 @@ export default async function SkillsPage() {
                     style={{ width: `${Math.min((skill.level / skill.targetLevel) * 100, 100)}%` }}
                   />
                 </div>
-                <form action={updateSkillLevel} className="mt-2 flex gap-2">
+                <form action={updateSkillLevel} className="mt-2 flex flex-wrap gap-2">
                   <input type="hidden" name="id" value={skill.id} />
                   <Input
                     name="level"

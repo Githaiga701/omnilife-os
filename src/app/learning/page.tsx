@@ -50,9 +50,9 @@ export default async function LearningPage() {
       title="Learning & Growth"
       description="Track your skills, units, and study time."
     >
-      <div className="flex gap-4">
+      <div className="flex">
         <div className="flex-1" />
-        <Card className="w-40">
+        <Card className="w-full sm:w-44">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Study Time</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
@@ -68,7 +68,7 @@ export default async function LearningPage() {
           <CardTitle>Start a New Learning Path</CardTitle>
         </CardHeader>
         <CardContent>
-          <form action={createLearningPath} className="flex gap-2">
+          <form action={createLearningPath} className="flex flex-col gap-2 sm:flex-row">
             <Input name="title" placeholder="e.g., Learn Machine Learning, Spanish B2..." className="flex-1" required />
             <Button type="submit">Create Path</Button>
           </form>
@@ -92,9 +92,9 @@ export default async function LearningPage() {
           return (
             <Card key={path.id} className="overflow-hidden">
               <CardHeader className="bg-muted/50">
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-xl">{path.title}</CardTitle>
-                  <Badge variant="secondary">{avgProgress}% Complete</Badge>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <CardTitle className="text-lg sm:text-xl">{path.title}</CardTitle>
+                  <Badge variant="secondary" className="w-fit">{avgProgress}% Complete</Badge>
                 </div>
                 <Progress value={avgProgress} className="h-2 mt-2" />
               </CardHeader>
@@ -133,7 +133,7 @@ export default async function LearningPage() {
                       {path.units.flatMap(u => u.assignments).map((assg) => {
                         const nextStatus = assg.status === "PENDING" ? "IN_PROGRESS" : assg.status === "IN_PROGRESS" ? "DONE" : "PENDING";
                         return (
-                          <form key={assg.id} action={toggleAssignment.bind(null, assg.id, nextStatus)} className="flex items-center space-x-2">
+                          <form key={assg.id} action={toggleAssignment.bind(null, assg.id, nextStatus)} className="flex items-start gap-2">
                             <input type="hidden" name="assignmentId" value={assg.id} />
                             <button type="submit" className={`h-5 w-5 rounded border flex items-center justify-center transition-colors cursor-pointer ${
                               assg.status === "DONE" ? "bg-green-500 border-green-500 text-white" :
@@ -143,7 +143,7 @@ export default async function LearningPage() {
                               {assg.status === "DONE" && <span className="text-xs">✓</span>}
                               {assg.status === "IN_PROGRESS" && <span className="text-xs text-blue-500">◐</span>}
                             </button>
-                            <span className={`text-sm font-medium leading-none ${
+                            <span className={`min-w-0 text-sm font-medium leading-snug ${
                               assg.status === "DONE" ? "line-through text-muted-foreground" :
                               assg.status === "IN_PROGRESS" ? "text-blue-400" : ""
                             }`}>

@@ -14,12 +14,8 @@ export function PageLoader({ isLoading }: PageLoaderProps) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    if (isLoading) {
-      const timer = setTimeout(() => setShow(true), 100);
-      return () => clearTimeout(timer);
-    } else {
-      setShow(false);
-    }
+    const timer = setTimeout(() => setShow(isLoading), isLoading ? 100 : 0);
+    return () => clearTimeout(timer);
   }, [isLoading]);
 
   if (!show) return null;

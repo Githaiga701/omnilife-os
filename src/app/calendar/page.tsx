@@ -1,7 +1,6 @@
 import { db } from "@/lib/db";
 import { getMockUser } from "@/lib/mock-auth";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,11 +15,6 @@ export default async function CalendarPage() {
     where: { userId: user.id },
     orderBy: { startTime: "asc" },
   })) as CalendarEvent[];
-
-  const todayEvents = events.filter(e => {
-    const today = new Date();
-    return e.startTime.toDateString() === today.toDateString();
-  });
 
   const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const dayCounts = weekDays.map((_, i) => {
@@ -44,7 +38,7 @@ export default async function CalendarPage() {
             <CalendarClock className="h-5 w-5 text-muted-foreground" />
           </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-7">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
             {weekDays.map((day, i) => (
               <div key={day} className="rounded-md border border-border/70 bg-background/55 p-3">
                 <p className="text-xs font-semibold text-center">{day}</p>
@@ -68,7 +62,7 @@ export default async function CalendarPage() {
               <Label htmlFor="title">Title</Label>
               <Input name="title" id="title" placeholder="Event title" required />
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid gap-2 sm:grid-cols-2">
               <div>
                 <Label>Start</Label>
                 <DatePicker name="startTime" includeTime required />
@@ -95,14 +89,14 @@ export default async function CalendarPage() {
         )}
         <div className="divide-y divide-border/70">
           {events.map((event) => (
-            <div key={event.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-              <div className="flex items-start gap-3 min-w-0">
+            <div key={event.id} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
+              <div className="flex min-w-0 items-start gap-3">
                 <CalendarClock className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                 <div className="min-w-0">
                   <p className="font-medium truncate">{event.title}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs leading-5 text-muted-foreground">
                     {new Date(event.startTime).toLocaleString()} – {new Date(event.endTime).toLocaleTimeString()}
-                    {event.location && <span className="ml-2 inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{event.location}</span>}
+                    {event.location && <span className="block min-w-0 items-center gap-1 sm:ml-2 sm:inline-flex"><MapPin className="inline h-3 w-3" />{event.location}</span>}
                   </p>
                 </div>
               </div>

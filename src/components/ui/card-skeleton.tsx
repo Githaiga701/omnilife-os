@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils";
 
+const lineWidths = [72, 88, 64, 80, 68, 92];
+
 interface CardSkeletonProps {
   className?: string;
   lines?: number;
@@ -22,7 +24,7 @@ export function CardSkeleton({ className, lines = 3 }: CardSkeletonProps) {
             key={i}
             className="h-3 bg-muted rounded animate-pulse"
             style={{
-              width: `${Math.random() * 40 + 60}%`,
+              width: `${lineWidths[i % lineWidths.length]}%`,
               animationDelay: `${i * 100}ms`,
             }}
           />

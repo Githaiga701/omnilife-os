@@ -13,41 +13,35 @@ type ThemeContextType = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("dark");
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("dark");
+function getStoredTheme(): Theme {
+  if (typeof window === "undefined") return "dark";
+  const stored = localStorage.getItem("omnilife-theme");
+  return stored === "light" || stored === "dark" || stored === "system" ? stored : "dark";
+}
 
-  useEffect(() => {
-    const stored = localStorage.getItem("omnilife-theme") as Theme | null;
-    if (stored) {
-      setTheme(stored);
-    }
-  }, []);
+function getSystemTheme(): "light" | "dark" {
+  if (typeof window === "undefined") return "dark";
+  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+}
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setTheme] = useState<Theme>(getStoredTheme);
+  const [systemTheme, setSystemTheme] = useState<"light" | "dark">(getSystemTheme);
+  const resolvedTheme = theme === "system" ? systemTheme : theme;
 
   useEffect(() => {
     const root = document.documentElement;
-    let resolved: "light" | "dark" = "dark";
 
-    if (theme === "system") {
-      resolved = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-    } else {
-      resolved = theme;
-    }
-
-    setResolvedTheme(resolved);
     root.classList.remove("light", "dark");
-    root.classList.add(resolved);
+    root.classList.add(resolvedTheme);
     localStorage.setItem("omnilife-theme", theme);
-  }, [theme]);
+  }, [theme, resolvedTheme]);
 
   useEffect(() => {
     if (theme !== "system") return;
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = () => {
-      const resolved = mediaQuery.matches ? "dark" : "light";
-      setResolvedTheme(resolved);
-      document.documentElement.classList.remove("light", "dark");
-      document.documentElement.classList.add(resolved);
+      setSystemTheme(mediaQuery.matches ? "dark" : "light");
     };
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);

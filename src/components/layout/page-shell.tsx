@@ -13,10 +13,10 @@ export function PageShell({ title, description, eyebrow = "OmniLife OS", childre
     <div className="space-y-6 pb-20 md:pb-0">
       <header className="flex flex-col gap-4 border-b border-border/60 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-2xl space-y-2">
-          <div className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+          <div className="text-xs font-semibold uppercase tracking-[0.16em] text-primary sm:tracking-[0.2em]">
             {eyebrow}
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{title}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-4xl">{title}</h1>
           {description ? <p className="max-w-xl text-sm leading-6 text-muted-foreground">{description}</p> : null}
         </div>
         <SearchBar />

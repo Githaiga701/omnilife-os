@@ -1,26 +1,39 @@
-import { streamText } from "ai";
+import { streamText, type ModelMessage } from "ai";
 import { aiModel } from "@/lib/ai-provider";
 import { omniTools } from "@/lib/ai-tools";
 
 export const maxDuration = 120;
 
-function toModelMessage(msg: any) {
-  const { id, parts, ...rest } = msg;
+type ChatPart = { type: string; text?: string };
+type ChatMessage = {
+  id?: unknown;
+  parts?: ChatPart[];
+  [key: string]: unknown;
+};
+
+function toModelMessage(msg: ChatMessage): ModelMessage {
+  const { parts } = msg;
+  const rest = { ...msg };
+  delete rest.id;
+  delete rest.parts;
+
   if (parts) {
-    const textParts = parts.filter((p: any) => p.type === "text");
-    const nonTextParts = parts.filter((p: any) => p.type !== "text");
+    const textParts = parts.filter((p) => p.type === "text");
+    const nonTextParts = parts.filter((p) => p.type !== "text");
     if (nonTextParts.length === 0 && textParts.length === 1) {
-      return { ...rest, content: textParts[0].text };
+      return { ...rest, content: textParts[0].text } as ModelMessage;
     }
-    return { ...rest, content: parts };
+    return { ...rest, content: parts } as ModelMessage;
   }
-  return rest;
+  return rest as ModelMessage;
 }
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { messages } = body;
+    const body: unknown = await req.json();
+    const messages = typeof body === "object" && body !== null && "messages" in body
+      ? (body as { messages?: unknown }).messages
+      : undefined;
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return new Response(JSON.stringify({ error: "Messages array is required" }), {
@@ -29,7 +42,7 @@ export async function POST(req: Request) {
       });
     }
 
-    const converted = messages.map(toModelMessage);
+    const converted = messages.map((message) => toModelMessage(message as ChatMessage));
 
     const systemPrompt = `You are the AI assistant for OmniLife OS, a personal operating system that manages a user's entire life including learning, finances, projects, and calendar.
 
