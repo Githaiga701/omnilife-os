@@ -78,6 +78,7 @@ function DatePickerInner({ name, required, includeTime = false, defaultValue, pl
   const [viewMonth, setViewMonth] = React.useState(() => initDate?.getMonth() ?? new Date().getMonth())
 
   const [validationMsg, setValidationMsg] = React.useState("")
+
   const [dropdownStyle, setDropdownStyle] = React.useState<React.CSSProperties>({
     position: "fixed",
     visibility: "hidden",
@@ -93,36 +94,44 @@ function DatePickerInner({ name, required, includeTime = false, defaultValue, pl
     ? (includeTime ? toDateTimeValue(selected) : toDateValue(selected))
     : ""
 
-  const calculateDropdownStyle = React.useCallback((): React.CSSProperties => {
-    const trigger = triggerRef.current
-    if (!trigger) return { position: "fixed", visibility: "hidden", top: 0, left: 0, width: 280 }
-
-    const rect = trigger.getBoundingClientRect()
-    const panelHeight = dropdownRef.current?.offsetHeight || 320
-    const spaceBelow = window.innerHeight - rect.bottom - 8
-    const spaceAbove = rect.top - 8
-
-    let top: number
-    if (spaceBelow >= panelHeight || spaceBelow >= spaceAbove) {
-      top = rect.bottom + 4
-    } else {
-      top = Math.max(8, rect.top - panelHeight - 4)
-    }
-
-    return {
-      position: "fixed",
-      top,
-      left: Math.min(rect.left, window.innerWidth - 300),
-      width: Math.max(rect.width, 280),
-      visibility: "visible",
-    }
-  }, [])
-
   React.useLayoutEffect(() => {
-    if (!open) return
+    if (!open) {
+      setDropdownStyle({
+        position: "fixed",
+        visibility: "hidden",
+        top: 0,
+        left: 0,
+        width: 280,
+      })
+      return
+    }
 
-    /* eslint-disable react-hooks/set-state-in-effect */
-    setDropdownStyle(calculateDropdownStyle())
+    function getPosition(): React.CSSProperties {
+      const trigger = triggerRef.current
+      if (!trigger) return { position: "fixed", visibility: "hidden", top: 0, left: 0, width: 280 }
+
+      const rect = trigger.getBoundingClientRect()
+      const panelHeight = dropdownRef.current?.offsetHeight || 320
+      const spaceBelow = window.innerHeight - rect.bottom - 8
+      const spaceAbove = rect.top - 8
+
+      let top: number
+      if (spaceBelow >= panelHeight || spaceBelow >= spaceAbove) {
+        top = rect.bottom + 4
+      } else {
+        top = Math.max(8, rect.top - panelHeight - 4)
+      }
+
+      return {
+        position: "fixed",
+        top,
+        left: Math.min(rect.left, window.innerWidth - 300),
+        width: Math.max(rect.width, 280),
+        visibility: "visible",
+      }
+    }
+
+    setDropdownStyle(getPosition())
 
     function handleClick(e: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
@@ -137,7 +146,7 @@ function DatePickerInner({ name, required, includeTime = false, defaultValue, pl
     }
 
     function handleReposition() {
-      setDropdownStyle(calculateDropdownStyle())
+      setDropdownStyle(getPosition())
     }
 
     document.addEventListener("mousedown", handleClick)
@@ -151,8 +160,7 @@ function DatePickerInner({ name, required, includeTime = false, defaultValue, pl
       window.removeEventListener("scroll", handleReposition, true)
       window.removeEventListener("resize", handleReposition)
     }
-    /* eslint-enable react-hooks/set-state-in-effect */
-  }, [open, calculateDropdownStyle])
+  }, [open])
 
   React.useEffect(() => {
     const form = wrapperRef.current?.closest("form")

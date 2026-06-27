@@ -73,16 +73,16 @@ export default async function Home() {
   const sevenDaysFromNow = new Date(now.getTime() + 7 * 86400000);
 
   const activeProjects = projects.filter(p => p.status === "ACTIVE").length;
-  const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0);
+  const totalBalance = accounts.reduce((sum: number, a: { balance: number }) => sum + a.balance, 0);
   const unpaidBills = bills.filter(b => b.status !== "PAID");
-  const totalUnpaidBills = unpaidBills.reduce((sum, b) => sum + b.amount, 0);
+  const totalUnpaidBills = unpaidBills.reduce((sum: number, b: { amount: number }) => sum + b.amount, 0);
   const overdueBills = bills.filter(b => b.status === "OVERDUE");
   const billsDueWithin3Days = bills.filter(b => b.status === "UNPAID" && b.dueDate >= now && b.dueDate <= threeDaysFromNow);
   const billsDueWithin7Days = bills.filter(b => b.status === "UNPAID" && b.dueDate > threeDaysFromNow && b.dueDate <= sevenDaysFromNow);
   const assignmentsDueWithin3Days = assignments.filter(a => a.dueDate && a.dueDate >= now && a.dueDate <= threeDaysFromNow);
-  const totalStudyMins = studySessions.reduce((sum, s) => sum + s.duration, 0);
+  const totalStudyMins = studySessions.reduce((sum: number, s: { duration: number }) => sum + s.duration, 0);
   const pendingIncome = incomes.filter(i => i.status !== "PAID");
-  const totalPendingIncome = pendingIncome.reduce((sum, i) => sum + (i.totalAmount - i.amountPaid), 0);
+  const totalPendingIncome = pendingIncome.reduce((sum: number, i: { totalAmount: number, amountPaid: number }) => sum + (i.totalAmount - i.amountPaid), 0);
   const eventsThisWeek = events.length;
   const notifications = [
     ...overdueBills.map(b => ({ type: "overdue" as const, module: "finance" as const, message: `"${b.title}" — $${b.amount.toFixed(2)} overdue`, severity: "critical" as const })),
@@ -91,8 +91,8 @@ export default async function Home() {
     ...assignmentsDueWithin3Days.map(a => ({ type: "due-soon" as const, module: "learning" as const, message: `"${a.title}" due ${a.dueDate ? new Date(a.dueDate).toLocaleDateString() : ""}`, severity: "warning" as const })),
   ].sort((a, b) => a.severity === "critical" ? -1 : a.severity === "warning" ? -1 : 1);
   const totalPathProgress = learningPaths.length > 0
-    ? Math.round(learningPaths.reduce((sum, p) => {
-        const completed = p.units.filter(u => u.completed).length;
+    ? Math.round(learningPaths.reduce((sum: number, p: { units: { completed: boolean }[] }) => {
+        const completed = p.units.filter((u: { completed: boolean }) => u.completed).length;
         const total = p.units.length || 1;
         return sum + (completed / total) * 100;
       }, 0) / learningPaths.length)
@@ -240,7 +240,7 @@ export default async function Home() {
                   </div>
                 </div>
                 <span className="w-fit rounded-lg border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-400">
-                  ${overdueBills.reduce((s, b) => s + b.amount, 0).toFixed(2)} overdue
+                  ${overdueBills.reduce((s: number, b: { amount: number }) => s + b.amount, 0).toFixed(2)} overdue
                 </span>
               </div>
             )}
@@ -356,7 +356,7 @@ export default async function Home() {
                   const d = new Date(b.dueDate);
                   return d.getMonth() === m;
                 });
-                monthlyTotals.push(monthBills.reduce((s, b) => s + b.amount, 0));
+                monthlyTotals.push(monthBills.reduce((s: number, b: { amount: number }) => s + b.amount, 0));
               }
               const max = Math.max(...monthlyTotals, 1);
               return monthlyTotals.map((total, i) => (

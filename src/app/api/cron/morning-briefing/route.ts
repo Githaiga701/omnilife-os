@@ -40,7 +40,7 @@ export async function GET(req: Request) {
       where: { status: "OVERDUE" },
     });
 
-    const totalBillsDue = billsDueToday.reduce((sum, b) => sum + b.amount, 0);
+    const totalBillsDue = billsDueToday.reduce((sum: number, b: { amount: number }) => sum + b.amount, 0);
 
     return NextResponse.json({
       success: true,
@@ -54,7 +54,7 @@ export async function GET(req: Request) {
           course: a.unit.learningPath.title,
         })),
         overdueBills: overdueBills.length,
-        overdueAmount: overdueBills.reduce((sum, b) => sum + b.amount, 0),
+        overdueAmount: overdueBills.reduce((sum: number, b: { amount: number }) => sum + b.amount, 0),
       },
     });
   } catch (error) {
