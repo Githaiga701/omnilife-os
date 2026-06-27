@@ -1,10 +1,10 @@
 import { revalidatePath } from "next/cache";
+import { REVALIDATE_ALL_ROUTES } from "@/lib/app-routes";
 
 export function revalidateAll() {
-  revalidatePath("/");
-  revalidatePath("/finances");
-  revalidatePath("/learning");
-  revalidatePath("/projects");
+  for (const route of REVALIDATE_ALL_ROUTES) {
+    revalidatePath(route);
+  }
 }
 
 export function handleServerError(error: unknown, context: string): { success: false; error: string } {

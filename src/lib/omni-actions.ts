@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { getMockUser } from "@/lib/mock-auth";
 import { handleServerError } from "@/lib/server-utils";
+import { ensurePrimaryAccount } from "@/lib/accounts";
+import { APP_ROUTES } from "@/lib/app-routes";
 
 async function ensureDefaultUser() {
   const user = await getMockUser();
@@ -34,23 +36,6 @@ async function ensureDefaultUser() {
   return user;
 }
 
-async function ensureDefaultAccount(userId: string) {
-  const existing = await db.account.findFirst({
-    where: { userId, name: "Primary Account" },
-  });
-
-  if (existing) return existing;
-
-  return db.account.create({
-    data: {
-      userId,
-      name: "Primary Account",
-      type: "CHECKING",
-      balance: 0,
-    },
-  });
-}
-
 export async function createProject(formData: FormData) {
   try {
     const title = String(formData.get("title") ?? "").trim();
@@ -71,8 +56,8 @@ export async function createProject(formData: FormData) {
       },
     });
 
-    revalidatePath("/projects");
-    revalidatePath("/");
+    revalidatePath(APP_ROUTES.projects);
+    revalidatePath(APP_ROUTES.dashboard);
   } catch (e) {
     handleServerError(e, "createProject");
     throw e;
@@ -98,8 +83,8 @@ export async function updateProjectStatus(formData: FormData) {
       data: { status },
     });
 
-    revalidatePath("/projects");
-    revalidatePath("/");
+    revalidatePath(APP_ROUTES.projects);
+    revalidatePath(APP_ROUTES.dashboard);
   } catch (e) {
     handleServerError(e, "updateProjectStatus");
     throw e;
@@ -118,7 +103,7 @@ export async function createTransaction(formData: FormData) {
     if (Number.isNaN(amountInput) || amountInput <= 0) return { error: "Invalid amount" };
 
     const user = await ensureDefaultUser();
-    const account = await ensureDefaultAccount(user.id);
+    const account = await ensurePrimaryAccount(user.id);
     const amount = type === "income" ? Math.abs(amountInput) : -Math.abs(amountInput);
 
     await db.transaction.create({
@@ -132,7 +117,7 @@ export async function createTransaction(formData: FormData) {
       },
     });
 
-    revalidatePath("/finances");
+    revalidatePath(APP_ROUTES.finances);
     return { success: true };
   } catch (e) {
     return handleServerError(e, "createTransaction");

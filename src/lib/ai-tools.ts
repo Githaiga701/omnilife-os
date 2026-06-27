@@ -3,6 +3,12 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { getMockUser } from "@/lib/mock-auth";
 import type { Assignment, Bill, IncomeEntry, LearningPath, Unit } from "@prisma/client";
+import {
+  createBillForUser,
+  createIncomeEntryForUser,
+  logIncomePaymentForUser,
+  markBillPaidForUser,
+} from "@/lib/finance-service";
 
 type UnitWithAssignments = Unit & { assignments: Assignment[] };
 type LearningPathWithUnits = LearningPath & { units: UnitWithAssignments[] };
@@ -219,16 +225,13 @@ export const omniTools = {
         const due = new Date(dueDate);
         if (isNaN(due.getTime())) return { error: "Invalid due date" };
 
-        const bill = await db.bill.create({
-          data: {
-            userId,
-            title: name,
-            amount,
-            dueDate: due,
-            isRecurring: isRecurring || false,
-            frequency: frequency || "ONE_TIME",
-            status: "UNPAID",
-          },
+        const bill = await createBillForUser({
+          userId,
+          name,
+          amount,
+          dueDate: due,
+          isRecurring: isRecurring || false,
+          frequency: frequency || "ONE_TIME",
         });
         return { success: true, message: `Bill '${name}' for $${amount} created.`, billId: bill.id };
       } catch (e) {
@@ -246,32 +249,12 @@ export const omniTools = {
     execute: async ({ billId, createTransaction }) => {
       try {
         const userId = await getUserIdWithFallback();
-        const bill = await db.bill.findUnique({ where: { id: billId } });
-        if (!bill || bill.userId !== userId) return { error: "Bill not found or access denied" };
-
-        await db.bill.update({
-          where: { id: billId },
-          data: { status: "PAID" },
+        const { bill } = await markBillPaidForUser({
+          userId,
+          billId,
+          createTransaction: createTransaction ?? true,
+          ensureAccountForTransaction: false,
         });
-
-        if (createTransaction) {
-          const account = await db.account.findFirst({ where: { userId, name: "Primary Account" } });
-          if (account) {
-            const tx = await db.transaction.create({
-              data: {
-                accountId: account.id,
-                userId,
-                amount: -bill.amount,
-                description: `Paid: ${bill.title}`,
-                category: "Bills",
-              },
-            });
-            await db.bill.update({
-              where: { id: billId },
-              data: { transactionId: tx.id },
-            });
-          }
-        }
 
         return { success: true, message: `Bill '${bill.title}' marked as PAID${createTransaction ? " and transaction logged" : ""}.` };
       } catch (e) {
@@ -293,15 +276,11 @@ export const omniTools = {
         const due = new Date(dueDate);
         if (isNaN(due.getTime())) return { error: "Invalid due date" };
 
-        const income = await db.incomeEntry.create({
-          data: {
-            userId,
-            sourceName,
-            totalAmount,
-            dueDate: due,
-            status: "PENDING",
-            amountPaid: 0,
-          },
+        const income = await createIncomeEntryForUser({
+          userId,
+          sourceName,
+          totalAmount,
+          dueDate: due,
         });
         return { success: true, message: `Income entry '${sourceName}' for $${totalAmount} created.`, incomeId: income.id };
       } catch (e) {
@@ -319,20 +298,13 @@ export const omniTools = {
     execute: async ({ incomeId, amount }) => {
       try {
         const userId = await getUserIdWithFallback();
-        const income = await db.incomeEntry.findUnique({ where: { id: incomeId } });
-        if (!income || income.userId !== userId) return { error: "Income entry not found or access denied" };
-
-        const newPaid = income.amountPaid + amount;
-        if (newPaid > income.totalAmount) return { error: "Total payment exceeds expected amount" };
-
-        const status = newPaid >= income.totalAmount ? "PAID" : "PARTIAL";
-
-        await db.incomeEntry.update({
-          where: { id: incomeId },
-          data: { amountPaid: newPaid, status },
+        const { income, amountPaid, status } = await logIncomePaymentForUser({
+          userId,
+          incomeId,
+          amount,
         });
 
-        return { success: true, message: `Logged $${amount} payment. Total paid: $${newPaid}/${income.totalAmount}. Status: ${status}` };
+        return { success: true, message: `Logged $${amount} payment. Total paid: $${amountPaid}/${income.totalAmount}. Status: ${status}` };
       } catch (e) {
         return { error: `Failed to log payment: ${e instanceof Error ? e.message : "Unknown error"}` };
       }
