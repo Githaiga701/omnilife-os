@@ -49,7 +49,7 @@ export async function GET(req: Request) {
         billsDueToday: billsDueToday.length,
         billsDueTotal: totalBillsDue,
         assignmentsDueToday: assignmentsDueToday.length,
-        assignmentsDetail: assignmentsDueToday.map(a => ({
+        assignmentsDetail: assignmentsDueToday.map((a: { title: string; unit: { learningPath: { title: string } } }) => ({
           title: a.title,
           course: a.unit.learningPath.title,
         })),
