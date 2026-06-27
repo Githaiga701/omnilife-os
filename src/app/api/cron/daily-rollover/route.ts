@@ -36,7 +36,7 @@ export async function GET(req: Request) {
       },
     });
 
-    const totalStudyMins = studySessions.reduce((sum: number, s) => sum + s.duration, 0);
+    const totalStudyMins = studySessions.reduce((sum: number, s: { duration: number }) => sum + s.duration, 0);
 
     return NextResponse.json({
       success: true,
