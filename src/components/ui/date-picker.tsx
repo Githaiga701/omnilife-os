@@ -192,7 +192,7 @@ function DatePickerInner({
 
   const fallbackPlaceholder = includeTime ? "Pick date & time" : "Pick a date"
 
-  const [dropdownStyle, setDropdownStyle] = React.useState<React.CSSProperties>({});
+  const [dropdownStyle, setDropdownStyle] = React.useState<React.CSSProperties>({ position: "fixed", visibility: "hidden", top: 0, left: 0 });
 
   React.useEffect(() => {
     if (!open || !triggerRef.current) return;
@@ -200,8 +200,9 @@ function DatePickerInner({
     setDropdownStyle({
       position: "fixed",
       top: rect.bottom + 4,
-      left: rect.left,
+      left: Math.min(rect.left, window.innerWidth - 300),
       width: Math.max(rect.width, 280),
+      visibility: "visible",
     });
   }, [open]);
 
