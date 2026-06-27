@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OmniLife OS
 
-## Getting Started
+Personal operating system dashboard built with Next.js, React, Prisma, and shadcn-style UI primitives. Current workflows cover a dashboard shell, project tracking, finance transaction capture, and placeholder sections for calendar, events, skills, hobbies, and settings.
 
-First, run the development server:
+## Requirements
+
+- Node.js compatible with Next.js 16
+- npm
+- Optional: PostgreSQL database URL for persistent Prisma data
+
+The app includes a local fallback database client so it can build and render without `DATABASE_URL`. Server actions that create records require a configured database to persist data.
+
+## Setup
+
+```bash
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+For persistence, create `.env.local` with:
+
+```bash
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
+OMNILIFE_DEFAULT_EMAIL="you@example.com"
+```
+
+Then generate Prisma artifacts and apply schema changes with the Prisma workflow used for your environment.
+
+## Scripts
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
+npm run build
+npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Key Paths
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `src/app/` - route pages and global styles.
+- `src/components/layout/` - app shell, sidebar, and command palette.
+- `src/components/ui/` - reusable UI primitives.
+- `src/lib/db.ts` - Prisma client with build-safe fallback.
+- `src/lib/omni-actions.ts` - server actions for projects and finance entries.
+- `prisma/schema.prisma` - current data model.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Validation
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run lint
+npm run build
+```

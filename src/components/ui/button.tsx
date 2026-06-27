@@ -2,6 +2,7 @@ import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+import { OrbitalLoader } from "@/components/ui/orbital-loader"
 
 const buttonVariants = cva(
   "group/button inline-flex shrink-0 items-center justify-center rounded-none border border-transparent bg-clip-padding text-xs font-semibold tracking-widest whitespace-nowrap uppercase transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
@@ -18,6 +19,9 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline underline-offset-4 hover:underline",
+        glow: "bg-primary text-primary-foreground shadow-[0_0_20px_-5px] shadow-primary/50 hover:shadow-[0_0_30px_-5px] hover:shadow-primary/60 border-primary/30",
+        glass: "bg-white/10 dark:bg-white/5 backdrop-blur-xl border-white/20 dark:border-white/10 text-foreground hover:bg-white/20 dark:hover:bg-white/10 shadow-lg",
+        gradient: "bg-gradient-to-r from-primary via-purple-500 to-pink-500 text-white border-0 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-100",
       },
       size: {
         default:
@@ -42,14 +46,26 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  isLoading,
+  children,
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants> & { isLoading?: boolean }) {
   return (
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      disabled={props.disabled || isLoading}
       {...props}
-    />
+    >
+      {isLoading ? (
+        <span className="flex items-center gap-2">
+          <OrbitalLoader size="sm" variant="minimal" />
+          Loading...
+        </span>
+      ) : (
+        children
+      )}
+    </ButtonPrimitive>
   )
 }
 

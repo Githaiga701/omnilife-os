@@ -6,16 +6,40 @@ datasource db {
   provider = "postgresql"
 }
 
+enum AssignmentStatus {
+  DONE
+  IN_PROGRESS
+  PENDING
+}
+
+enum BillStatus {
+  UNPAID
+  PAID
+  OVERDUE
+}
+
+enum IncomeStatus {
+  PENDING
+  PARTIAL
+  PAID
+}
+
 model User {
-  id           String          @id @default(cuid())
-  email        String          @unique
-  name         String?
-  createdAt    DateTime        @default(now())
-  projects     Project[]
-  transactions Transaction[]
-  accounts     Account[]
-  events       CalendarEvent[]
-  skills       Skill[]
+  id              String           @id @default(cuid())
+  email           String           @unique
+  name            String?
+  createdAt       DateTime         @default(now())
+  projects        Project[]
+  transactions    Transaction[]
+  accounts        Account[]
+  events          CalendarEvent[]
+  skills          Skill[]
+  learningPaths   LearningPath[]
+  bills           Bill[]
+  incomeEntries   IncomeEntry[]
+  journalEntries  JournalEntry[]
+  studySessions   StudySession[]
+  hobbies         Hobby[]
 }
 
 model Project {
@@ -60,6 +84,8 @@ model Transaction {
   category    String?
   isPending   Boolean  @default(false)
   date        DateTime @default(now())
+
+  bill Bill?
 }
 
 model CalendarEvent {
@@ -82,4 +108,101 @@ model Skill {
   category    String
   level       Int    @default(0)
   targetLevel Int    @default(10)
+}
+
+model LearningPath {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  title       String
+  description String?
+  progress    Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  units      Unit[]
+}
+
+model Unit {
+  id             String      @id @default(cuid())
+  learningPathId String
+  learningPath   LearningPath @relation(fields: [learningPathId], references: [id])
+  title          String
+  description    String?
+  order          Int
+  completed      Boolean   @default(false)
+
+  assignments Assignment[]
+}
+
+model Assignment {
+  id      String           @id @default(cuid())
+  unitId  String
+  unit    Unit             @relation(fields: [unitId], references: [id])
+  title   String
+  status  AssignmentStatus @default(PENDING)
+  dueDate DateTime?
+}
+
+enum BillFrequency {
+  ONE_TIME
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+model Bill {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  title         String
+  amount        Float
+  dueDate       DateTime
+  status        BillStatus    @default(UNPAID)
+  isRecurring   Boolean       @default(false)
+  frequency     BillFrequency @default(ONE_TIME)
+  transactionId String?       @unique
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  createdAt     DateTime      @default(now())
+}
+
+model IncomeEntry {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  sourceName  String
+  totalAmount Float
+  amountPaid  Float         @default(0)
+  status      IncomeStatus  @default(PENDING)
+  dueDate     DateTime?
+  createdAt   DateTime      @default(now())
+}
+
+model JournalEntry {
+  id      String   @id @default(cuid())
+  userId  String
+  user    User     @relation(fields: [userId], references: [id])
+  content String
+  mood    String?
+  date    DateTime @default(now())
+}
+
+model StudySession {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  subject     String
+  duration    Int
+  notes       String?
+  startTime   DateTime
+  endTime     DateTime
+}
+
+model Hobby {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  cadence   String?
+  progress  Int      @default(0)
+  createdAt DateTime @default(now())
 }
