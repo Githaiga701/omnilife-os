@@ -6,7 +6,7 @@ export function SearchBar() {
   return (
     <button
       type="button"
-      onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
+      onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true }))}
       className="flex w-full cursor-pointer items-center gap-2 rounded-md border border-border/70 bg-card/75 px-3 py-2 shadow-sm backdrop-blur lg:w-80"
     >
       <Search className="h-4 w-4 text-muted-foreground" />
