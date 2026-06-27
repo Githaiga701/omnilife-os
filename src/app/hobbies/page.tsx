@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createHobby, updateHobbyProgress, deleteHobby } from "@/app/actions/calendar";
 import { Brush, Camera, Music2, Trophy, Trash2 } from "lucide-react";
+import type { Hobby } from "@prisma/client";
 
 const hobbyIcons: Record<string, any> = {
   Brush, Camera, Music2, Trophy,
@@ -14,10 +15,10 @@ const hobbyIcons: Record<string, any> = {
 
 export default async function HobbiesPage() {
   const user = await getMockUser();
-  const hobbies = await db.hobby.findMany({
+  const hobbies = (await db.hobby.findMany({
     where: { userId: user.id },
     orderBy: { progress: "desc" },
-  });
+  })) as Hobby[];
 
   return (
     <PageShell

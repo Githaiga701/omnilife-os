@@ -7,13 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createSkill, updateSkillLevel } from "@/app/actions/calendar";
 import { Brain, ChartNoAxesColumnIncreasing, GraduationCap, Target } from "lucide-react";
+import type { Skill } from "@prisma/client";
 
 export default async function SkillsPage() {
   const user = await getMockUser();
-  const skills = await db.skill.findMany({
+  const skills = (await db.skill.findMany({
     where: { userId: user.id },
     orderBy: { level: "desc" },
-  });
+  })) as Skill[];
 
   return (
     <PageShell

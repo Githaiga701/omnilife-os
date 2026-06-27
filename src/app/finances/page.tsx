@@ -13,19 +13,20 @@ import {
   markBillAsPaid, logIncomePayment 
 } from "@/app/actions/finances";
 import { DollarSign, TrendingUp, AlertCircle, CheckCircle2 } from "lucide-react";
+import type { Bill, IncomeEntry } from "@prisma/client";
 
 export default async function FinancesPage() {
   const user = await getMockUser();
 
-  const bills = await db.bill.findMany({
+  const bills = (await db.bill.findMany({
     where: { userId: user.id },
     orderBy: { dueDate: "asc" },
-  });
+  })) as Bill[];
 
-  const incomes = await db.incomeEntry.findMany({
+  const incomes = (await db.incomeEntry.findMany({
     where: { userId: user.id },
     orderBy: { dueDate: "asc" },
-  });
+  })) as IncomeEntry[];
 
   const unpaidBills = bills.filter(b => b.status !== "PAID");
   const totalUnpaidBills = unpaidBills.reduce((acc, b) => acc + b.amount, 0);

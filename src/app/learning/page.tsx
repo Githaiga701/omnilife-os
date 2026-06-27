@@ -14,11 +14,15 @@ import {
   toggleAssignment, addJournalEntry 
 } from "@/app/actions/learning";
 import { BookOpen, Clock } from "lucide-react";
+import type { Assignment, JournalEntry, LearningPath, StudySession, Unit } from "@prisma/client";
+
+type UnitWithAssignments = Unit & { assignments: Assignment[] };
+type LearningPathWithUnits = LearningPath & { units: UnitWithAssignments[] };
 
 export default async function LearningPage() {
   const user = await getMockUser();
 
-  const learningPaths = await db.learningPath.findMany({
+  const learningPaths = (await db.learningPath.findMany({
     where: { userId: user.id },
     include: {
       units: { 
@@ -27,17 +31,17 @@ export default async function LearningPage() {
       },
     },
     orderBy: { createdAt: "desc" },
-  });
+  })) as LearningPathWithUnits[];
 
-  const journals = await db.journalEntry.findMany({
+  const journals = (await db.journalEntry.findMany({
     where: { userId: user.id },
     orderBy: { date: "desc" },
     take: 3,
-  }).catch(() => []);
+  }).catch(() => [])) as JournalEntry[];
 
-  const studySessions = await db.studySession.findMany({
+  const studySessions = (await db.studySession.findMany({
     where: { userId: user.id },
-  });
+  })) as StudySession[];
 
   const totalMins = studySessions.reduce((sum, log) => sum + log.duration, 0);
 

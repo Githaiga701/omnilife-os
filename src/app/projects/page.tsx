@@ -6,6 +6,9 @@ import { createProject, updateProjectStatus } from "@/lib/omni-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import type { Project } from "@prisma/client";
+
+type ProjectListItem = Pick<Project, "id" | "title" | "description" | "status" | "createdAt">;
 
 const statusStyles: Record<string, string> = {
   ACTIVE: "border-sky-400/30 bg-sky-400/10 text-sky-200",
@@ -15,7 +18,7 @@ const statusStyles: Record<string, string> = {
 
 export default async function ProjectsPage() {
   const user = await getMockUser();
-  const projects = await db.project.findMany({
+  const projects = (await db.project.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: "desc" },
     select: {
@@ -25,7 +28,7 @@ export default async function ProjectsPage() {
       status: true,
       createdAt: true,
     },
-  });
+  })) as ProjectListItem[];
 
   const activeCount = projects.filter((project) => project.status === "ACTIVE").length;
   const pausedCount = projects.filter((project) => project.status === "PAUSED").length;

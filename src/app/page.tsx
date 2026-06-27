@@ -27,6 +27,24 @@ import { PageShell } from "@/components/layout/page-shell";
 import { PremiumCard } from "@/components/ui/premium-card";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type {
+  Account,
+  Assignment,
+  Bill,
+  CalendarEvent,
+  IncomeEntry,
+  JournalEntry,
+  LearningPath,
+  Project,
+  StudySession,
+  Unit,
+} from "@prisma/client";
+
+type AssignmentWithCourse = Assignment & {
+  unit: Unit & { learningPath: LearningPath };
+};
+
+type LearningPathWithUnits = LearningPath & { units: Unit[] };
 
 async function safeModelQuery<T>(query: Promise<T> | undefined): Promise<T | null> {
   if (query === undefined) return null;
@@ -38,13 +56,13 @@ export default async function Home() {
 
   const [
     projects, accounts, bills, incomes, events,
-  ] = await Promise.all([
+  ] = (await Promise.all([
     db.project.findMany({ where: { userId: user.id } }),
     db.account.findMany({ where: { userId: user.id } }),
     db.bill.findMany({ where: { userId: user.id }, orderBy: { dueDate: "asc" } }),
     db.incomeEntry.findMany({ where: { userId: user.id } }),
     db.calendarEvent.findMany({ where: { userId: user.id }, orderBy: { startTime: "asc" }, take: 5 }),
-  ]);
+  ])) as [Project[], Account[], Bill[], IncomeEntry[], CalendarEvent[]];
 
   const [studySessions, assignments, learningPaths, journals] = await Promise.all([
     db.studySession.findMany({ where: { userId: user.id } }),
@@ -66,7 +84,7 @@ export default async function Home() {
       orderBy: { date: "desc" },
       take: 3,
     }),
-  ]);
+  ]) as [StudySession[], AssignmentWithCourse[], LearningPathWithUnits[], JournalEntry[]];
 
   const now = new Date();
   const threeDaysFromNow = new Date(now.getTime() + 3 * 86400000);

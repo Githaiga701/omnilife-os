@@ -2,6 +2,10 @@ import { tool } from "ai";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { getMockUser } from "@/lib/mock-auth";
+import type { Assignment, Bill, IncomeEntry, LearningPath, Unit } from "@prisma/client";
+
+type UnitWithAssignments = Unit & { assignments: Assignment[] };
+type LearningPathWithUnits = LearningPath & { units: UnitWithAssignments[] };
 
 async function getUserId() {
   const user = await getMockUser();
@@ -23,7 +27,7 @@ export const omniTools = {
     execute: async () => {
       try {
         const userId = await getUserIdWithFallback();
-        const paths = await db.learningPath.findMany({
+        const paths = (await db.learningPath.findMany({
           where: { userId },
           include: {
             units: {
@@ -31,7 +35,7 @@ export const omniTools = {
               include: { assignments: true },
             },
           },
-        });
+        })) as LearningPathWithUnits[];
         return paths.map(p => ({
           id: p.id,
           title: p.title,
@@ -54,10 +58,10 @@ export const omniTools = {
     execute: async () => {
       try {
         const userId = await getUserIdWithFallback();
-        const bills = await db.bill.findMany({
+        const bills = (await db.bill.findMany({
           where: { userId },
           orderBy: { dueDate: "asc" },
-        });
+        })) as Bill[];
         return bills.map(b => ({
           id: b.id,
           name: b.title,
@@ -78,10 +82,10 @@ export const omniTools = {
     execute: async () => {
       try {
         const userId = await getUserIdWithFallback();
-        const incomes = await db.incomeEntry.findMany({
+        const incomes = (await db.incomeEntry.findMany({
           where: { userId },
           orderBy: { dueDate: "asc" },
-        });
+        })) as IncomeEntry[];
         return incomes.map(i => ({
           id: i.id,
           sourceName: i.sourceName,

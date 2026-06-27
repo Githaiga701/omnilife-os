@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
 import { createCalendarEvent, deleteCalendarEvent } from "@/app/actions/calendar";
 import { MapPinned, Plane, Ticket, Users, CalendarClock, Trash2 } from "lucide-react";
+import type { CalendarEvent } from "@prisma/client";
 
 const eventTypeIcons: Record<string, any> = {
   Travel: Plane,
@@ -17,10 +18,10 @@ const eventTypeIcons: Record<string, any> = {
 
 export default async function EventsPage() {
   const user = await getMockUser();
-  const events = await db.calendarEvent.findMany({
+  const events = (await db.calendarEvent.findMany({
     where: { userId: user.id },
     orderBy: { startTime: "asc" },
-  });
+  })) as CalendarEvent[];
 
   const planCount = events.filter(e => e.startTime > new Date(Date.now() + 7 * 86400000)).length;
   const bookCount = events.filter(e => {

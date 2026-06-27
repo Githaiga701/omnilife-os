@@ -8,13 +8,14 @@ import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
 import { createCalendarEvent, deleteCalendarEvent } from "@/app/actions/calendar";
 import { CalendarClock, MapPin, Trash2 } from "lucide-react";
+import type { CalendarEvent } from "@prisma/client";
 
 export default async function CalendarPage() {
   const user = await getMockUser();
-  const events = await db.calendarEvent.findMany({
+  const events = (await db.calendarEvent.findMany({
     where: { userId: user.id },
     orderBy: { startTime: "asc" },
-  });
+  })) as CalendarEvent[];
 
   const todayEvents = events.filter(e => {
     const today = new Date();
