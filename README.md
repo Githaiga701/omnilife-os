@@ -23,6 +23,7 @@ For persistence, create `.env.local` with:
 
 ```bash
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
+NEXT_PUBLIC_SITE_URL="https://your-app.example.com"
 OMNILIFE_DEFAULT_EMAIL="you@example.com"
 ```
 
