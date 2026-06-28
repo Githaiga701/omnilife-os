@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Sidebar } from "@/components/layout/sidebar";
 import { AICommandBar } from "@/components/layout/ai-command-bar";
@@ -36,6 +37,7 @@ export default function RootLayout({
           </div>
           <AICommandBar />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
